@@ -1,0 +1,26 @@
+﻿
+<EditForm Model="CurrentRole" OnValidSubmit="OnValidSubmit">
+    <div class="form-group">
+        <label for="name">Nombre del perfil</label>
+        <InputText class="form-control" type="text" name="name" @bind-Value="CurrentRole.Name" autofocus></InputText>
+        <ValidationMessage For="@(() => CurrentRole.Name)" />
+    </div>
+
+    <div class="flex-row align-content-start justify-content-center mt-5">
+        <BackButton PreviousUrl="/roles" />
+        <SubmitButton Caption="@TextButton" Icon="pencil-square-o" />
+    </div>
+
+    <DataAnnotationsValidator />
+</EditForm>
+
+@code {
+    [Parameter]
+    public Role CurrentRole { get; set; }
+    [Parameter]
+    public string TextButton { get; set; }
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+    [Parameter]
+    public bool IsNew { get; set; }
+}

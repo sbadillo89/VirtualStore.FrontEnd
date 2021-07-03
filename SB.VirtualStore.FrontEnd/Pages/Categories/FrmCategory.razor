@@ -1,0 +1,62 @@
+﻿
+@if (CurrentCategory == null)
+{
+    <p>No se recibio ninguna categoria</p>
+}
+else
+{
+
+<EditForm Model="CurrentCategory" OnValidSubmit="OnValidSubmit">
+    <div class="form-group">
+        <label for="name">Nombre de categoria</label>
+        <InputText class="form-control" type="text" name="name" @bind-Value="CurrentCategory.Name" autofocus></InputText>
+        <ValidationMessage For="@(() => CurrentCategory.Name)" />
+    </div>
+
+    <div class="form-group">
+        <label for="status">Estado</label>
+        <InputSelect class="form-control" @bind-Value="CurrentCategory.Active" name="status">
+            <option value="">--- Seleccione ---</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => CurrentCategory.Active)" />
+    </div>
+
+    @if (!IsNew)
+    {
+        <div class="form-group">
+            <label for="createDate">Fecha de creación</label>
+            <InputDate class="form-control" @bind-Value="CurrentCategory.CreatedDate" name="createDate" disabled="true" />
+        </div>
+    }
+    <div class="flex-row align-content-start justify-content-center">
+        <BackButton PreviousUrl="/categories"  />
+        <SubmitButton Caption="@TextButton"  Icon="tag" />
+    </div>
+    @*<div class="form-group m-0">
+        <button type="submit" class="btn btn-primary btn-block">
+            @TextButton
+        </button>
+    </div>*@
+
+    <DataAnnotationsValidator />
+</EditForm>
+  
+}
+
+@code {
+
+
+    [Parameter]
+    public CategoryCreate CurrentCategory { get; set; }
+    [Parameter]
+    public string TextButton { get; set; }
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+    [Parameter]
+    public bool IsNew { get; set; }
+
+
+}
+

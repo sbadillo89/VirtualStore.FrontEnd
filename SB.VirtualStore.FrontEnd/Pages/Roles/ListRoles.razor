@@ -1,0 +1,85 @@
+﻿
+@page   "/roles"
+
+@using SB.VirtualStore.FrontEnd.Pages.Auth
+
+@inject HttpClient Http
+@inject IJSRuntime jsr
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    @*<p><a href="/login">Login to access this data.</a></p>*@
+    <Login redirectTo="/roles"></Login>
+}
+else if (roles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+<Card>
+    <TitleHeader Title="Listado de roles de la aplicación." />
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Perfil</th>
+                <th>Fecha de creación</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var role in roles)
+            {
+                <tr>
+                    <td>@role.Name</td>
+                    <td>@role.CreatedDate.ToShortDateString()</td>
+                    <td>@(role.Active ? "Activo" : "Inactivo")</td>
+                    <td>
+                        <a href="javascript:void(0);" class="btn btn-primary btn-sm @(role.Active ? "disabled" : "")" role="button" @onclick="() =>  UpdateRole(role)">Activar</a>
+                        <a href="javascript:void(0);" class="btn btn-secondary btn-sm @(!role.Active ? "disabled" : "")" role="button" @onclick="() =>  UpdateRole(role)">Inactivar</a>
+                        <a href="roles/edit/@role.Id" class="btn btn-success btn-sm" role="button">Editar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+    <div class="flex-row align-content-start justify-content-center">
+        <BackButton PreviousUrl="/settings" />
+        <IconButton Caption="Nuevo perfil" Color="primary" Icon="user-secret" NavigateTo="/roles/add" />
+    </div>
+</Card>
+}
+
+
+@code {
+
+    [Inject]
+    private IServiceRole serviceRole { get; set; }
+    public string Url = "/api/roles";
+    private IEnumerable<Role> roles = null;
+    string userdata = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceRole.token = userdata.Split(';', 5)[1];
+            roles = (await serviceRole.GetAllAsync(Url));
+        }
+    }
+
+    async Task UpdateRole(Role role)
+    {
+        Console.WriteLine(role.Name);
+        role.Active = !role.Active;
+        await serviceRole.PutAsync(Url + $"/{role.Id}", role);
+        roles.Where(r => r.Id == role.Id).FirstOrDefault().Active = role.Active;
+    }
+}

@@ -1,0 +1,6 @@
+﻿=== PRODUCTOS ===
+
+	- Activar/Incativar
+	- Paginado en lista
+
+Last Update: 09/05/2021

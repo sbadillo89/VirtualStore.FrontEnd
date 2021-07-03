@@ -1,0 +1,78 @@
+﻿@inject IJSRuntime jsr
+@inject NavigationManager navigation
+@inject IServiceProduct serviceProduct
+
+@page "/products"
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    <Login redirectTo="/products"></Login>
+}
+else if (ProductList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+<Card>
+    <TitleHeader Title="Listado de productos" />
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                @*<th>Imagen</th>*@
+                <th>Categoria</th>
+                <th>Género</th>
+                <th>Costo</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Product product in ProductList)
+            {
+                <tr>
+                    <td>@product.Name</td>
+                    <td>@product.Description</td>
+                    @*<td><img src="@product.Image" style="width:24px; height:24px;" /></td>*@
+                    <td class="text-truncate">@product.Category.Name</td>
+                    <td>@product.Gender.Name</td>
+                    <td>@product.Cost.ToString("C0")</td>
+                    <td>@product.Price.ToString("C0")</td>
+                    <td>
+                        <a href="javascript:void(0);" class="btn btn-primary btn-sm @(product.Active ? "disabled" : "")" role="button">Activar</a>
+                        <a href="javascript:void(0);" class="btn btn-secondary btn-sm @(!product.Active ? "disabled" : "")" role="button">Inactivar</a>
+                        <a href="products/edit/@product.Id" class="btn btn-success btn-sm" role="button">Editar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="flex-row align-content-start justify-content-center">
+        <BackButton PreviousUrl="/settings" />
+        <IconButton Caption="Nuevo producto" Color="primary" Icon="cube" NavigateTo="/products/add" />
+    </div>
+</Card>
+}
+
+@code {
+
+    string Url = "/api/product";
+    string userdata = string.Empty;
+
+    IEnumerable<Product> ProductList = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceProduct.token = userdata.Split(';', 5)[1];
+            ProductList = await serviceProduct.GetAllAsync(Url);
+        }
+
+    }
+}

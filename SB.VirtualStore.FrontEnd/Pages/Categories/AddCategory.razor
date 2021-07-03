@@ -1,0 +1,40 @@
+﻿@page "/categories/add"
+
+@inject IJSRuntime jsr;
+@inject NavigationManager navigation;
+
+<Card Size="75">
+    <TitleHeader Title="Agregar nueva categoria" />
+    <FrmCategory CurrentCategory="createCategory" TextButton="Agregar categoria" OnValidSubmit="OnCreateCategory" IsNew="true"></FrmCategory>
+</Card>
+
+@code {
+
+    [Inject]
+    IServiceCategory serviceCategory { get; set; }
+    private CategoryCreate createCategory = new CategoryCreate();
+    string userdata = string.Empty;
+    string Url = "api/categories";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceCategory.token = userdata.Split(';', 5)[1];
+        }
+    }
+
+    async Task OnCreateCategory()
+    {
+        Console.WriteLine(createCategory);
+        Category newCategory = new Category(createCategory);
+        newCategory.CreatedDate = DateTime.Now;
+        await serviceCategory.PostAsync(Url, newCategory);
+        navigation.NavigateTo("/categories");
+    }
+
+}

@@ -1,0 +1,73 @@
+﻿@inject IJSRuntime jsr
+@inject NavigationManager navigation
+
+<EditForm Model="CurrentUser" OnValidSubmit="OnValidSubmit">
+
+    <div class="form-group">
+        <label for="name">Nombres</label>
+        <InputText class="form-control" type="text" name="UserName" @bind-Value="@CurrentUser.UserName" autofocus></InputText>
+        <ValidationMessage For="@(() => CurrentUser.UserName)" />
+    </div>
+    <div class="form-group">
+        <label for="name">Email</label>
+        <InputText class="form-control" type="text" name="emailUser" @bind-Value="CurrentUser.Email"></InputText>
+        <ValidationMessage For="@(() => CurrentUser.Email)" />
+    </div>
+    <div class="form-group">
+        <label for="name">Contraseña</label>
+        <InputText class="form-control" type="password" name="pass" @bind-Value="CurrentUser.Password"></InputText>
+        <ValidationMessage For="@(() => CurrentUser.Password)" />
+    </div>
+   
+    <div class="form-group">
+        <label for="status">Perfil</label>
+        <InputSelect class="form-control" @bind-Value="CurrentUser.GuidIdAsSrting" name="status">
+            <option value=""> --- Seleccione --- </option>
+            @if (Roles != null)
+            {
+                @foreach (var rol in Roles)
+                {
+                    <option value="@rol.Id">@rol.Name</option>
+                }
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => CurrentUser.GuidIdAsSrting)" />
+    </div>
+    <div class="form-group m-0">
+        <BackButton PreviousUrl="/users" />
+        <SubmitButton Caption="@TextButton" IsBusyCaption="...Guardando" Icon="user-plus" Size="sm" />
+    </div>
+
+    <DataAnnotationsValidator />
+</EditForm>
+
+@code {
+
+    [Inject]
+    IServiceRole serviceRole { get; set; }
+
+    [Parameter]
+    public User CurrentUser { get; set; }
+    [Parameter]
+    public string TextButton { get; set; }
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+    [Parameter]
+    public bool IsNew { get; set; }
+
+    IEnumerable<Role> Roles { get; set; }
+    string userdata = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceRole.token = userdata.Split(';', 5)[1];
+            Roles = await serviceRole.GetAllAsync("api/roles");
+        }
+    }
+
+
+}

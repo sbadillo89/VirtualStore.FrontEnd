@@ -1,0 +1,52 @@
+﻿@page "/roles/add";
+
+@inject IJSRuntime jsr;
+@inject NavigationManager NavigationManager;
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    <Login redirectTo="/roles"></Login>
+}
+else
+{
+    <Card Size="75">
+        <TitleHeader Title="Agregar Perfil" />
+        <FrmRole IsNew="false" TextButton="Guardar" OnValidSubmit="OnValidaSubmit" CurrentRole="NewRole" />
+    </Card>
+}
+
+@code {
+
+    [Parameter]
+    public Role NewRole { get; set; }
+
+    [Inject]
+    IServiceRole serviceRole { get; set; }
+
+    string Url = "api/roles";
+
+    string userdata = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        NewRole = new Role();
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceRole.token = userdata.Split(";", 5)[1];
+        }
+    }
+
+    async Task OnValidaSubmit()
+    {
+        NewRole.Active = true;
+        NewRole.CreatedDate = DateTime.Now;
+        Role roleInserted = await serviceRole.PostAsync(Url, NewRole);
+        if (roleInserted != null && roleInserted.Id != Guid.Empty)
+        {
+            NavigationManager.NavigateTo("/roles");
+        }
+    }
+
+}

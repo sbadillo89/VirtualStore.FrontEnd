@@ -1,0 +1,48 @@
+﻿@page "/users/edit/{UserId}"
+@inject IJSRuntime jsr
+@inject NavigationManager navigation
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    <Login redirectTo="/users"/>
+}
+else
+{
+    <Card>
+        <TitleHeader Title="Editar usuario" />
+        <FrmUser IsNew="false" TextButton="Guardar cambios" CurrentUser="User" OnValidSubmit="OnValidSubmit" />
+    </Card>
+
+}
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+
+    [Inject]
+    IServiceUsuario serviceUser { get; set; }
+
+    public User User { get; set; }
+
+    string Url = "/api/user/";
+    string userdata = string.Empty;
+    string token = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            token = userdata.Split(";", 5)[1];
+            User = await serviceUser.GetByIdAsync(Url + UserId, token);
+        }
+    }
+
+    async Task OnValidSubmit()
+    {
+        await serviceUser.PutAsync(Url + UserId, User, userdata);
+        navigation.NavigateTo("/users");
+    }
+
+}

@@ -1,0 +1,53 @@
+﻿@page "/roles/edit/{RoleId}";
+
+@inject IJSRuntime jsr;
+@inject NavigationManager NavigationManager;
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    <Login redirectTo="/roles"></Login>
+}
+else if (CurrentRole == null)
+{
+    <p>No se obtuvo información para el rol selecionado @RoleId </p>
+}
+else
+{
+    <Card Size="75">
+        <TitleHeader Title="Editar Perfil" />
+        <FrmRole IsNew="false" TextButton="Guardar cambios" OnValidSubmit="OnEditRole" CurrentRole="CurrentRole" />
+    </Card>
+}
+
+@code {
+
+    [Parameter]
+    public string RoleId { get; set; }
+
+    [Inject]
+    IServiceRole serviceRole { get; set; }
+
+    string Url = "/api/roles/";
+
+    public Role CurrentRole = null;
+
+    string userdata = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceRole.token = userdata.Split(";", 5)[1];
+            CurrentRole = await serviceRole.GetByIdAsync(Url + RoleId);
+        }
+    }
+
+    async Task OnEditRole()
+    {
+        await serviceRole.PutAsync(Url + RoleId, CurrentRole);
+        NavigationManager.NavigateTo("/roles");
+    }
+}

@@ -1,0 +1,58 @@
+﻿@page "/categories/edit/{CategoryId}"
+@inject IJSRuntime jsr
+@inject NavigationManager navigation
+
+<Card Size="75">
+    <TitleHeader Title="Editar Categoria" />
+    <FrmCategory CurrentCategory="@category" TextButton="Guardar cambios" OnValidSubmit="@OnEditCategory" />
+
+</Card>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string CategoryId { get; set; }
+    [Inject]
+    public IServiceCategory serviceCategory { get; set; }
+    string userdata = string.Empty;
+    public string Url = "/api/categories/";
+    private CategoryCreate category;
+    string errorMessage = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            string baseUri = Url + CategoryId;
+            serviceCategory.token = userdata.Split(';', 5)[1];
+            Category cat = await serviceCategory.GetByIdAsync(baseUri);
+            category = new CategoryCreate(cat);
+        }
+    }
+
+    async Task OnEditCategory()
+    {
+        string baseUri = Url + CategoryId;
+        Category categoryUpdated = new Category(category);
+        var response = await serviceCategory.PutAsync(baseUri, categoryUpdated);
+        navigation.NavigateTo("/categories");
+        //if (response.Status == System.Net.HttpStatusCode.OK)
+        //{
+        //    category = (CategoryCreate)response.ResponseData;
+        //    navigation.NavigateTo("/categories");
+        //}
+        //else
+        //{
+        //    errorMessage = $"No se pudo actualizar la categoría {categoryUpdated.Name}";
+        //}
+    }
+}
+

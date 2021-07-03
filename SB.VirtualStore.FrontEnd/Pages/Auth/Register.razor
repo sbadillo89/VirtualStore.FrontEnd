@@ -1,0 +1,104 @@
+﻿@page "/register"
+
+@inject NavigationManager navigationManager  
+
+
+<section class="h-75">
+    <div class="container h-100">
+        <div class="row justify-content-md-center h-100">
+            <div class="card-wrapper">
+                <div class="brand">
+                    <img class="logo" src="https://image.freepik.com/free-vector/mobile-shopping-addiction-big-sale-online-wholesale-low-price-sellout-idea-design-element-digital-store-customer-shopaholic-holding-smartphone_335657-3553.jpg" alt="logo">
+                </div>
+                <div class="card fat">
+                    <div class="card-body">
+                        <h4 class="card-title">Register</h4>
+                        <EditForm Model="user" OnValidSubmit="OnValid" style="max-width:500px;">
+
+                            <DataAnnotationsValidator />
+
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input id="name" type="text" class="form-control" name="name" autofocus @bind-value="user.UserName">
+                                <ValidationMessage For="@(()=> user.UserName)" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">E-Mail Address</label>
+                                <input id="email" type="email" class="form-control" name="email" @bind-value="user.Email">
+                                <ValidationMessage For="@(()=> user.Email)" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input id="password" type="password" class="form-control" name="password" data-eye @bind-value="user.Password">
+                                <ValidationMessage For="@(()=> user.Password)" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Confirm Password</label>
+                                <input id="password" type="password" class="form-control" name="password" data-eye @bind-value="user.ConfirmPassword">
+                            </div>
+
+
+                            <div class="form-group">
+                                <div class="custom-checkbox custom-control">
+                                    <input type="checkbox" name="agree" id="agree" class="custom-control-input" required="">
+                                    <label for="agree" class="custom-control-label">I agree to the <a href="#">Terms and Conditions</a></label>
+                                </div>
+                            </div>
+
+                            <div class="form-group m-0">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    Register
+                                </button>
+                            </div>
+                            <div class="mt-4 text-center">
+                                Ya tienes una cuenta? <a href="/login">Login</a>
+                            </div>
+
+                        </EditForm>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert alert-danger" style="max-width:500px;">
+                        @message
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+
+    AuthUser user = new AuthUser();
+    string url = "/api/user/register";
+    string message = string.Empty;
+
+    [Inject]
+    IAuthService<AuthRequest, AuthResponse> serviceUsuario { get; set; }
+
+    private async Task OnValid()
+    {
+
+        if(user.Password!= user.ConfirmPassword)
+        {
+            message = "Las contraseñas no coinciden.";
+            return;
+        }
+
+        var result = await serviceUsuario.Register(url, user);
+        if (result.Status == System.Net.HttpStatusCode.OK)
+        {
+            message = "Usuario registrado correctamente";
+            navigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            message = result.Message;
+        }
+    }
+}

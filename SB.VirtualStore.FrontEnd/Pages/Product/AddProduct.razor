@@ -1,0 +1,44 @@
+﻿@inject IJSRuntime jsr
+@inject NavigationManager navigation
+@inject IServiceProduct serviceProduct
+@inject IServiceCategory serviceCategory
+@inject IGenderService  serviceGender
+
+@page "/products/add"
+
+<Card Size="75">
+    <TitleHeader Title="Agregar productos" />
+
+    <FrmProduct TextButton="Guardar producto" IsNew="true" OnValidSubmit="OnCreateProduct" Product="@Product" />
+</Card>
+
+@code {
+
+    ProductCreate Product = new ProductCreate();
+
+    string Url = "/api/product";
+    string userdata = string.Empty;
+    string token = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            token = userdata.Split(';', 5)[1];
+
+        }
+    }
+
+    async Task OnCreateProduct()
+    {
+        serviceProduct.token = token;
+        Product newProduct = new Product(Product);
+        var productCreated = await serviceProduct.PostAsync(Url, newProduct);
+        if (productCreated != null)
+        {
+            navigation.NavigateTo("/products");
+        }
+    }
+}

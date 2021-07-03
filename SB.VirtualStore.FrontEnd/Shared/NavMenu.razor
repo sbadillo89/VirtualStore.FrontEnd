@@ -1,0 +1,74 @@
+﻿@inject IJSRuntime jsr
+
+<div class="top-row pl-4 navbar color-site">
+    <a class="navbar-brand color-text-site" href="">@nameWebStore</a>
+    <button class="navbar-toggler color-text-site" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="fetchdata">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            </NavLink>
+        </li>
+        @if (isAdmin)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="settings">
+                    <span class="oi oi-cog" aria-hidden="true"></span> Configuración
+                </NavLink>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    string userdata = string.Empty;
+    bool isAdmin = false;
+    string nameWebStore = "Virtual Store";
+    [Inject]
+    private IServiceConfiguration serviceConfiguration { get; set; }
+    ConfigurationSite configurationSite = null;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+
+            isAdmin = Convert.ToBoolean(userdata.Split(';', 5)[4]);
+
+            serviceConfiguration.token = userdata.Split(";", 5)[1];
+            IEnumerable<ConfigurationSite> config = (await serviceConfiguration.GetAsync("/api/ConfigurationSite"));
+            if (config != null)
+            {
+                configurationSite = config.FirstOrDefault(x => x.Active);
+                nameWebStore = configurationSite.Name;
+            }
+        }
+    }
+
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

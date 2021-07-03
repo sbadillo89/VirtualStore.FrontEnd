@@ -1,0 +1,75 @@
+﻿@page "/categories"
+
+@inject IJSRuntime jsr
+@inject NavigationManager  navigation
+ 
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    <Login redirectTo="/roles"></Login>
+}
+else if (categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+<Card>
+    <TitleHeader Title="Categorias de productos" />
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Activo</th>
+                <th>Fecha creación</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Category category in categories)
+            {
+                <tr>
+                    <td>@category.Name</td>
+                    <td>@(category.Active ? "SI" : "NO")</td>
+                    <td>@category.CreatedDate.ToShortDateString()</td>
+                    <td>
+                        <a href="javascript:void(0);" class="btn btn-primary btn-sm @(category.Active ? "disabled" : "")" role="button" @onclick="() =>  UpdateCategory(category)">Activar</a>
+                        <a href="javascript:void(0);" class="btn btn-secondary btn-sm @(!category.Active ? "disabled" : "")" role="button" @onclick="() =>  UpdateCategory(category)">Inactivar</a>
+                        <a href="categories/edit/@category.Id" class="btn btn-success btn-sm" role="button">Editar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="flex-row align-content-start justify-content-center">
+        <BackButton PreviousUrl="/settings" />
+        <IconButton Caption="Nueva categoria" Color="primary" Icon="tags" NavigateTo="categories/add" />
+    </div>
+</Card>
+}
+@code {
+    [Inject]
+    private IServiceCategory serviceCategory { get; set; }
+    public string Url = "/api/categories";
+    private IEnumerable<Category> categories = null;
+    string userdata = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            serviceCategory.token = userdata.Split(';', 5)[1];
+            categories = (await serviceCategory.GetAllAsync(Url));
+        }
+    }
+    async Task UpdateCategory(Category category)
+    { 
+        category.Active = !category.Active;
+        await serviceCategory.PutAsync(Url + $"/{category.Id}", category);
+        categories.Where(r => r.Id == category.Id).FirstOrDefault().Active = category.Active;
+    }
+
+} 

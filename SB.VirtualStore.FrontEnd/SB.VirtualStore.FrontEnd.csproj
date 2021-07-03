@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Auth\Login.razor" />
+    <None Include="Pages\Auth\Logout.razor" />
+    <None Include="Pages\Auth\Register.razor" />
+    <None Include="Pages\Categories\AddCategory.razor" />
+    <None Include="Pages\Categories\Categories.razor" />
+    <None Include="Pages\Categories\EditCategory.razor" />
+    <None Include="Pages\Categories\FrmCategory.razor" />
+    <None Include="Pages\Product\AddProduct.razor" />
+    <None Include="Pages\Roles\AddRole.razor" />
+    <None Include="Pages\Roles\EditRole.razor" />
+    <None Include="Pages\Roles\FrmRole.razor" />
+    <None Include="Pages\Roles\ListRoles.razor" />
+    <None Include="Pages\Settings\Settings.razor" />
+    <None Include="Pages\Users\AddUser.razor" />
+    <None Include="Pages\Users\EditUser.razor" />
+    <None Include="Pages\Users\FrmUser.razor" />
+    <None Include="Pages\Users\Users.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.5" PrivateAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Radzen.Blazor" Version="3.2.6" />
+    <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

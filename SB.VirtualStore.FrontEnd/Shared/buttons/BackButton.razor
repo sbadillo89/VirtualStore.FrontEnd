@@ -1,0 +1,24 @@
+﻿@inject NavigationManager NavigationManager
+
+
+<button class="btn btn-warning btn-@Size" @onclick="NavigateToBack">
+    <i class="fa fa-arrow-left" aria-hidden="true"></i>
+    <span>Volver</span>
+</button>
+@code {
+    [Parameter]
+    public string PreviousUrl { get; set; }
+
+    [Parameter]
+    public string Size { get; set; }
+
+    private void NavigateToBack()
+    {
+        NavigationManager.NavigateTo(PreviousUrl);
+    }
+
+    public BackButton()
+    {
+        Size = "sm";
+    }
+}

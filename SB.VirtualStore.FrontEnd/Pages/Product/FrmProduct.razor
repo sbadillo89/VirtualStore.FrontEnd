@@ -1,0 +1,206 @@
+﻿@inject IJSRuntime jsr
+@inject IServiceCategory serviceCategory
+@inject IGenderService serviceGender
+
+<EditForm Model="Product" OnValidSubmit="OnValidSubmit">
+    <div class="row">
+        <div class="col-xl-3">
+            <div class="shadow rounded-lg p-2 mb-4 mt-4" style="height:30%;">
+                @if (!string.IsNullOrEmpty(Product.Image))
+                {
+                    <img src="@Product.Image" alt="User Profile Picture" class="img-thumbnail" accept=".jpg, .jpeg, png" style="height:100%; width:100%" />
+                    <br /> <br />
+                }
+            </div>
+
+            <InputFile OnChange="@OnInputFileChanged" style="margin-bottom: 1rem;"></InputFile>
+        </div>
+        <div class="col-xl-9">
+
+            <div class="form-group">
+                <label for="Nombre">
+                    Nombre
+                </label>
+                <InputText type="text" class="form-control" @bind-Value="Product.Name"></InputText>
+                <ValidationMessage For="@(()=> Product.Name)" />
+            </div>
+            <div class="form-group">
+                <label for="Descripcion">
+                    Descripción
+                </label>
+                <InputText type="text" class="form-control" @bind-Value="Product.Description"></InputText>
+                <ValidationMessage For="@(()=> Product.Description)" />
+            </div>
+            <div class="row">
+
+                <div class="col-lg-6 col-md-6">
+                    <div class="form-group">
+                        <label for="status">Categoria</label>
+                        <InputSelect class="form-control" @bind-Value="Product.GuidCategoryIdAsSrting" name="status">
+                            <option value=""> --- Seleccione --- </option>
+                            @if (Categories != null)
+                            {
+                                @foreach (var category in Categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Product.GuidCategoryIdAsSrting)" />
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-6">
+                    <div class="form-group">
+                        <label for="status">Género</label>
+                        <InputSelect class="form-control" @bind-Value="Product.GuidGEnderIdAsSrting" name="status">
+                            <option value=""> --- Seleccione --- </option>
+                            @if (Genders != null)
+                            {
+                                @foreach (var gender in Genders)
+                                {
+                                    <option value="@gender.Id">@gender.Name</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Product.GuidGEnderIdAsSrting)" />
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label for="Barcode">
+                    Código de barras
+                </label>
+                <InputText type="text" class="form-control" @bind-Value="Product.Barcode"></InputText>
+                <ValidationMessage For="@(()=> Product.Barcode)" />
+            </div>
+
+            <div class="row">
+
+                <div class="col-lg-4 col-md-4">
+                    <div class="form-group">
+                        <label for="Reference">
+                            Referencia
+                        </label>
+                        <InputText type="text" class="form-control" @bind-Value="Product.Reference"></InputText>
+                        <ValidationMessage For="@(()=> Product.Reference)" />
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-4">
+                    <div class="form-group">
+                        <label for="Color">
+                            Color
+                        </label>
+                        <InputText type="text" class="form-control" @bind-Value="Product.Color"></InputText>
+                        <ValidationMessage For="@(()=> Product.Color)" />
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-4">
+
+                    <div class="form-group">
+                        <label for="Talla">
+                            Talla
+                        </label>
+                        <InputText type="text" class="form-control" @bind-Value="Product.Talla"></InputText>
+                        <ValidationMessage For="@(()=> Product.Talla)" />
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-4">
+                    <div class="form-group">
+                        <label for="Cost">
+                            Costo
+                        </label>
+                        <RadzenNumeric TValue="double" Format="0.00" @bind-Value="Product.Cost" ShowUpDown="false" class="form-control" />
+                        <ValidationMessage For="@(()=> Product.Cost)" />
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="form-group">
+                        <label for="Price">
+                            Precio de venta
+                        </label>
+                        <RadzenNumeric TValue="double" Format="0.00" @bind-Value="Product.Price" ShowUpDown="false" class="form-control" />
+                        <ValidationMessage For="@(()=> Product.Price)" />
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="form-group">
+                        <label for="Discount">
+                            Descuento
+                        </label>
+                        <RadzenNumeric TValue="double" Format="0.00" @bind-Value="Product.Discount" ShowUpDown="false" class="form-control" />
+                        <ValidationMessage For="@(()=> Product.Discount)" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="flex-row align-content-start justify-content-center mt-2">
+        <BackButton PreviousUrl="/products" />
+        <SubmitButton Caption="@TextButton" Icon="cube" />
+    </div>
+
+    <DataAnnotationsValidator />
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public ProductCreate Product { get; set; }
+    [Parameter]
+    public string TextButton { get; set; }
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+    [Parameter]
+    public bool IsNew { get; set; }
+
+
+    IEnumerable<Category> Categories;
+
+    IEnumerable<Gender> Genders;
+
+    string userdata = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await  base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            string token = userdata.Split(';', 5)[1];
+
+            serviceCategory.token = token;
+            Categories = await serviceCategory.GetAllAsync("/api/categories");
+
+            serviceGender.token = token;
+            Genders = await serviceGender.GetAllAsync("/api/gender");
+
+        }
+    }
+
+    private async Task OnInputFileChanged(InputFileChangeEventArgs inputFileChangeEvent)
+    {
+        //get the file
+        var file = inputFileChangeEvent.File;
+
+        //read that file in a byte array
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream(1512000).ReadAsync(buffer);
+
+        //convert byte array to base 64 string
+        Product.Image = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+    }
+
+}

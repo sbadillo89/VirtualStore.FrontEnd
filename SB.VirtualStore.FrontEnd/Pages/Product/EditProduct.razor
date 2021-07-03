@@ -1,0 +1,45 @@
+﻿@inject NavigationManager navigation
+@inject IJSRuntime jsr
+@inject IServiceProduct serviceProduct
+
+@page "/products/edit/{productId}"
+
+<Card Size="75">
+    <TitleHeader Title="Editar producto" />
+    <FrmProduct TextButton="Guardar cambios" IsNew="false" OnValidSubmit="@OnUpdateProdut" Product="@ProductToEdit" />
+</Card>
+
+@code {
+
+    [Parameter]
+    public string productId { get; set; }
+    string userdata = string.Empty;
+    public string Url = "/api/product/";
+
+    ProductCreate ProductToEdit = new ProductCreate();
+    string token = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            token = userdata.Split(';', 5)[1];
+            Product product = await serviceProduct.GetByIdAsync(Url, productId);
+            ProductToEdit = new ProductCreate(product);
+        }
+    }
+    async Task OnUpdateProdut()
+    {
+        serviceProduct.token = token;
+        Product product = new Product(ProductToEdit);
+        product.Id = Guid.Parse(productId);
+        var productUpdated = await serviceProduct.PutAsync(Url, productId, product);
+        if (productUpdated != null)
+        {
+            navigation.NavigateTo("/products");
+        }
+    }
+
+}

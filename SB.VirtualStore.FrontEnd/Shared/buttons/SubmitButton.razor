@@ -1,0 +1,53 @@
+﻿
+<button 
+        class="btn btn-@Color btn-@Size" 
+        type="submit" 
+        disabled="@IsBusy" 
+        onclick="@OnClickCallback" 
+        @onclick:preventDefault="@PreventDefault">
+
+        <i class="fa fa-@Icon"></i> 
+        <span>@DisplayCaption</span>
+
+</button>
+
+@code {
+
+    [Parameter]
+    public string Icon { get; set; }
+    [Parameter]
+    public string Color { get; set; }
+    [Parameter]
+    public string Size { get; set; }
+    [Parameter]
+    public bool IsBusy { get; set; }
+    [Parameter]
+    public string Caption { get; set; }
+    [Parameter]
+    public string IsBusyCaption { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+
+    private string DisplayCaption
+    {
+        get
+        {
+            return (IsBusy) ? IsBusyCaption : Caption;
+        }
+    }
+
+    private bool PreventDefault
+    {
+        get
+        {
+            return OnClickCallback.HasDelegate;
+        }
+    }
+
+    public SubmitButton()
+    {
+        Color = "primary";
+        IsBusy = false;
+        Size = "sm";
+    }
+}

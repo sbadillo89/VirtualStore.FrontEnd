@@ -1,0 +1,99 @@
+﻿@page "/login"
+@inject HttpClient Http
+@inject IJSRuntime jsr
+@inject NavigationManager NavigationManager
+
+<section class="h-75">
+    <div class="container h-100">
+        <div class="row justify-content-md-center h-100">
+            <div class="card-wrapper">
+                <div class="brand">
+                    <img class="logo" src="https://image.freepik.com/free-vector/mobile-shopping-addiction-big-sale-online-wholesale-low-price-sellout-idea-design-element-digital-store-customer-shopaholic-holding-smartphone_335657-3553.jpg" alt="logo">
+                </div>
+                <div class="card fat">
+                    <div class="card-body">
+                        <h4 class="card-title">Login</h4>
+                        <div class="my-login-validation">
+
+                            <EditForm Model="user" OnValidSubmit="OnValid" style="max-width:500px;">
+
+                                <DataAnnotationsValidator />
+
+                                <div class="form-group">
+                                    <label for="email">E-Mail Address</label>
+                                    <InputText class="form-control" type="email" name="email" @bind-Value="user.Email" required autofocus></InputText>
+                                    <ValidationMessage For="@(()=> user.Email)" />
+                                    @*<input type="text" @bind="@message2" @bind:event="oninput" /> esto modifica el valor al ir tecleando *@
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">
+                                        Password
+                                        <a href="/forgot-password" class="float-right">
+                                            Olvidaste contraseña?
+                                        </a>
+                                    </label>
+                                    <InputText type="password" class="form-control" @bind-Value="user.Password" required data-eye></InputText>
+                                    <ValidationMessage For="@(()=> user.Password)" />
+                                </div>
+                                <div class="form-group m-0">
+                                    <button type="submit" class="btn btn-primary btn-block" disabled="@isDisabled">
+                                        Login
+                                    </button>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    No tienes una cuenta? <a href="/register">Crear cuenta</a>
+                                </div>
+
+                            </EditForm>
+
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="@(error ? "alert alert-danger" : "alert alert-success")" style="max-width:500px;">
+                        @message
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string redirectTo { get; set; } = "/";
+    [Inject]
+    IAuthService<AuthRequest,AuthResponse> serviceAuth { get; set; }
+    AuthRequest user = new AuthRequest();
+    string message = string.Empty;
+    string url = "/api/user/login";
+    bool isDisabled = false;
+    bool error = false;
+
+    private async Task OnValid()
+    {
+        isDisabled = true;
+
+        var result = await serviceAuth.Login(url, user);
+        error = (result.Status == System.Net.HttpStatusCode.OK ? false : true);
+        message = result.Message;
+        isDisabled = false;
+        if (result.Status == System.Net.HttpStatusCode.OK)
+        {
+            AuthResponse authResponse = result.ResponseData;
+            DateTime expireAt = authResponse.ExpireDate;
+            await jsr.InvokeVoidAsync("localStorage.setItem", "userVS", $"{authResponse.email};{authResponse.token};{authResponse.userName};{expireAt};{authResponse.IsAdmin}").ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(redirectTo))
+            {
+                NavigationManager.NavigateTo(redirectTo, true);
+            }
+        }
+    }
+}
+
+
+@*https://nauvalazhar.github.io/bootstrap-4-login-page/index.html*@
+@*https://github.com/nauvalazhar/bootstrap-4-login-page/blob/master/index.html*@

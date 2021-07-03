@@ -1,0 +1,33 @@
+﻿@inject NavigationManager NavigationManager
+
+<button class="btn btn-@Color btn-@Size" @onclick="NavigateToUrl">
+    <i class="fa fa-@Icon" aria-hidden="true"></i>
+    <span>@Caption</span>
+</button>
+
+@code {
+    [Parameter]
+    public string Caption { get; set; }
+
+    [Parameter]
+    public string Color { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public string Size { get; set; }
+
+    [Parameter]
+    public string NavigateTo { get; set; }
+
+    private void NavigateToUrl()
+    {
+        NavigationManager.NavigateTo(NavigateTo);
+    }
+    public IconButton()
+    {
+        Color = "primary";
+        Size = "sm";
+    }
+}

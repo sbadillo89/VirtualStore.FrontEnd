@@ -1,0 +1,82 @@
+﻿@page "/users"
+
+@inject IJSRuntime jsr
+@inject NavigationManager  navigation
+
+
+@if (string.IsNullOrEmpty(userdata))
+{
+    <Login redirectTo="/roles"></Login>
+}
+else if (UserList == null)
+{
+    <p><em>No data available</em></p>
+}
+else
+{
+    <Card>
+        <TitleHeader Title="Usuarios" />
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Fecha Creación</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (User user in UserList)
+                {
+                    <tr>
+                        <td>@user.UserName</td>
+                        <td>@(user.Email)</td>
+                        <td>@user.Rol.Name</td>
+                        <td>@user.CreatedDate</td>
+                        <td>
+                            <a href="javascript:void(0);" class="btn btn-primary btn-sm @(user.Active ? "disabled" : "")" role="button" @onclick="() =>  UpdateUser(user)">Activar</a>
+                            <a href="javascript:void(0);" class="btn btn-secondary btn-sm @(!user.Active ? "disabled" : "")" role="button" @onclick="() =>  UpdateUser(user)">Inactivar</a>
+                            <a href="users/edit/@user.Id" class="btn btn-success btn-sm" role="button">Editar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="flex-row align-content-start justify-content-center">
+            <BackButton PreviousUrl="/settings" />
+            <IconButton Caption="Nuevo Usuario" Color="primary" Icon="user-plus" NavigateTo="user/add" />
+        </div>
+    </Card>
+}
+
+
+@code {
+
+    [Inject]
+    IServiceUsuario serviceUsuario { get; set; }
+    string Url = "api/user";
+    string userdata = string.Empty;
+    string token = string.Empty;
+
+    IEnumerable<User> UserList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            token = userdata.Split(';', 5)[1];
+            UserList = (await serviceUsuario.GetAllAsync(Url, token));
+        }
+    }
+
+    async Task UpdateUser(User user)
+    {
+        user.Active = !user.Active;
+        await serviceUsuario.PutAsync(Url + $"/{user.Id}", user, token);
+        UserList.Where(r => r.Email == user.Email).FirstOrDefault().Active = user.Active;
+    }
+}

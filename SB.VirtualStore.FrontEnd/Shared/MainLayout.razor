@@ -1,0 +1,65 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime jsr
+@inject NavigationManager navigationManager
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <div class="top-row px-4 color-site">
+            @*<a href="/login" target="_blank" class="ml-md-auto "><i class="bi bi-box-arrow-in-right"></i>  Login</a>*@
+            @if (string.IsNullOrEmpty(UserName))
+            {
+                <NavLink class="nav-link color-text-site" href="/login">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Login
+                </NavLink>
+            }
+            else
+            {
+                <NavLink class="nav-link color-text-site" href="#">
+                    <span class="oi oi-person" aria-hidden="true"> </span> <span>Bienvenido, </span> @UserName
+                </NavLink>
+                <NavLink class="nav-link color-text-site" href="/logout">
+                    <span class="oi oi-account-logout" aria-hidden="true"> </span> Logout
+                </NavLink>
+            }
+        </div>
+
+        <div class="content px-4">
+            @Body
+        </div>
+          
+        <div class="footer">
+            <div class="container">  Copyright &copy; @year &mdash; Sergio Badillo Inc.</div>
+        </div>
+
+    </div>
+     
+
+</div>
+
+
+@code {
+    private string UserName = string.Empty;
+    string year = DateTime.Now.Year.ToString();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+        DateTime expireDate = DateTime.MinValue;
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            UserName = userdata.Split(';', 5)[2];
+            expireDate = Convert.ToDateTime(userdata.Split(';', 5)[3]);
+            if (DateTime.Now > expireDate)
+            {
+                await jsr.InvokeVoidAsync("localStorage.removeItem", "userVS").ConfigureAwait(false);
+                navigationManager.NavigateTo("/", true);
+            }
+        }
+    }
+}

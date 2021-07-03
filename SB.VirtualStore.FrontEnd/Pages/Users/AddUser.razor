@@ -1,0 +1,43 @@
+﻿@page "/user/add"
+
+@inject IJSRuntime jsr
+@inject NavigationManager navigation
+
+<Card Size="75">
+    <TitleHeader Title="Agregar nuevo usuario" />
+    <FrmUser CurrentUser="user"
+             IsNew="true"
+             OnValidSubmit="OnValidSubmit"
+             TextButton="Guardar" />
+</Card>
+
+@code {
+    [Inject]
+    IServiceUsuario serviceUsuario { get; set; }
+
+    string Url = "api/user";
+    User user = new User();
+    string userdata = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        userdata = await jsr.InvokeAsync<string>("localStorage.getItem", "userVS").ConfigureAwait(false);
+
+    }
+
+    async Task OnValidSubmit()
+    {
+        user.Active = true;
+        if (!string.IsNullOrEmpty(userdata))
+        {
+            string token = userdata.Split(';', 5)[1];
+            User userInserted = await serviceUsuario.PostAsync(Url, user, token);
+            if (userInserted != null && userInserted.Id != Guid.Empty)
+            {
+                navigation.NavigateTo("/users");
+            }
+        }
+    }
+}

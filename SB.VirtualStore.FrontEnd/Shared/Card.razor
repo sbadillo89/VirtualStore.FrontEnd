@@ -1,0 +1,23 @@
+﻿<div class="m-0 row align-content-center justify-content-center">
+    <div class="w-@Size px-5 py-lg-5 shadow rounded-lg">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Width in percentage
+    /// </summary>
+    [Parameter]
+    public int Size { get; set; }
+
+    public Card()
+    {
+        Size = 100;
+    }
+
+}
